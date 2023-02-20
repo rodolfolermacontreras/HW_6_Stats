@@ -1,0 +1,199 @@
+---
+title: "HW6"
+author: "Team_9"
+date: "2023-02-20"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Homework 6
+
+## Team 9:
+
+-   Charlie Madison
+-   Hrishi Mysore Harishkumar
+-   Michelle Li
+-   Qizhuang Huang
+-   Shaun Pfister
+-   Rodolfo Lerma
+
+## Description
+
+The cities.csv dataset is a subset of the 500 Cities Project of the Centers for Disease Control and Prevention (CDC). It contains information about the prevalence of various medical conditions in the population of 123 cities of the US. In particular, these are the columns available in the `cities.csv` dataset:
+
+-   `City`: the name of the city
+-   `Arthritis among adults aged >=18 Years`: the prevalence of arthritis in the adult population of the city
+-   `Chronic kidney disease among adults aged >=18 Years`: the prevalence of chronic kidney disease in the adult population of the city
+-   `Chronic obstructive pulmonary disease among adults aged >=18 Years`: the prevalence of chronic obstructive pulmonary disease in the adult population of the city
+-   `Coronary heart disease among adults aged >=18 Years`: the prevalence of chronic heart disease in the adult population of the city
+-   `Current lack of health insurance among adults aged 18-64 Years`: the proportion of the adult population in the city that is not covered by health insurance
+-   `Diagnosed diabetes among adults aged >=18 Years`: the prevalence of diabetes in the adult population of the city
+-   `High cholesterol among adults aged >=18 Years`: the prevalence of high colesterol in the adult population of the city
+-   `No leisure-time physical activity among adults aged >=18 Years`: the proportion of the adult population in the city that does not participate in any physical activity.
+
+## Question 1:
+
+**Load the `cities.csv` dataset in R. Drop the City column, since we will not need it in our analysis. Also, rename the other columns as follows:**
+
+-   `Arthritis among adults aged >=18 Years`: arthritis
+-   `Chronic kidney disease among adults aged >=18 Years`: kidney_disease
+-   `Chronic obstructive pulmonary disease among adults aged >=18 Years`: copd
+-   `Coronary heart disease among adults aged >=18 Years`: heart_disease
+-   `Current lack of health insurance among adults aged 18-64 Years`: no_health_insurance
+-   `Diagnosed diabetes among adults aged >=18 Years`: diabetes
+-   `High cholesterol among adults aged >=18 Years`: high_colesterol
+-   `No leisure-time physical activity among adults aged >=18 Years`: no_exercise
+
+```{r}
+df <- read.csv("cities.csv")
+df <- df[, -1]
+
+# rename the columns
+colnames(df) <- c("arthritis", "kidney_disease", "copd", "heart_disease",
+                      "no_health_insurance", "diabetes", "high_colesterol", "no_exercise")
+head(df)
+```
+
+## Question 2:
+
+**Apply Principal Component Analysis (PCA) to the dataset that you just created. Make sure to specify that the variables are centered (i.e., their empirical mean is set to 0) and also scaled (i.e., their empirical standard deviation is set to 1) in the `prcomp` function.**
+
+```{r}
+# perform PCA
+pca <- prcomp(df, center = TRUE, scale. = TRUE)
+
+# print the results
+summary(pca)
+```
+
+## Question 3:
+
+**Compute and plot the proportion of variance explained by the principal components and the cumulative proportion of variance explained by the principal components.**
+
+```{r}
+# compute proportion of variance explained
+prop_var <- pca$sdev^2 / sum(pca$sdev^2)
+
+# compute cumulative proportion of variance explained
+cum_prop_var <- cumsum(prop_var)
+
+# plot the results
+plot(prop_var, xlab = "Principal Component", ylab = "Proportion of Variance Explained",
+     ylim = c(0, 1), col = "purple",  type = "b", main = "Scree Plot")
+lines(cum_prop_var, type = "b", col = "blue", pch = 16, lty = 1,
+      ylab = "Cumulative Proportion of Variance Explained")
+
+grid(nx = NULL, ny = NULL,
+     lty = 2, col = "gray", lwd = 1)
+```
+
+## Question 4:
+
+**The nominal dimension of this dataset is 8 (i.e., we have 8 variables available in total). Based on the plot of the cumulative proportion of variance explained by the principal components that you just produced, what do you think is the `effective` dimensionality of this dataset (i.e., are the observations in these data concentrated on a smaller subspace and what is the dimension of this subspace)? Explain.**
+
+Based on the plot of the cumulative proportion of variance explained by the principal components that we just produced, it appears that the effective dimensionality of this dataset is relatively low. The plot shows that the first principal component accounts for the majority of the variance in the data, followed by the second principal component, with all subsequent components explaining a smaller and smaller proportion of the variance.
+
+More specifically, the plot shows that the first two principal components account for more than 60% of the variance in the data, and the first four principal components account for more than 80% of the variance. This suggests that the observations in these data are concentrated on a smaller subspace than the full nominal dimension of 8.
+
+Therefore, we could say that the effective dimensionality of this dataset is likely 2-4, meaning that the observations in these data can be described by a smaller number of underlying factors that are highly correlated with the original variables. This interpretation is supported by the fact that we are able to capture a large proportion of the variance in the data with just a few principal components.
+
+## Question 5:
+
+**Compute the correlation matrix for the variables of the `cities.csv` dataset. After inspecting the correlation matrix, are you surprised that PCA was successful in reducing the dimensionality of this dataset? Explain.**
+
+```{r}
+correlation_matrix <- cor(df)
+correlation_matrix
+```
+After inspecting the correlation matrix, it is not surprising that PCA was successful in reducing the dimensionality of this dataset. We can see that many of the variables are highly correlated with each other, indicating that they are measuring similar underlying factors. For example, arthritis, chronic kidney disease, and diagnosed diabetes are all positively correlated with each other, as are high cholesterol and coronary heart disease.
+
+These correlations suggest that the information contained in these variables is largely redundant, and that we could capture much of the variation in the data with fewer variables. This is exactly what PCA does: it identifies a smaller set of orthogonal linear combinations of the original variables (i.e., the principal components) that capture the maximum amount of variation in the data.
+
+In short, the high degree of correlation between the variables in the cities.csv dataset provides a good explanation for why PCA was able to successfully reduce the dimensionality of the data.
+
+## Question 6:
+
+**Let's focus on the first 2 principal components found for the `cities.csv` dataset. Produce the biplot for the first 2 principal components and interpret it.**
+
+```{r}
+# Create the biplot
+par(mfrow = c(1, 1))
+biplot(pca, cex = 0.55, scale = 0)
+#options(repr.plot.width = 60, repr.plot.height = 12)
+grid(nx = NULL, ny = NULL,
+     lty = 2, col = "gray", lwd = 1)
+```
+
+This will produce a plot that shows the projection of the original variables onto the first two principal components, as well as the location of the city observations in this two-dimensional space.
+
+Interpreting a biplot can be somewhat subjective, but there are some general guidelines that we can follow. The length of the arrow representing each variable indicates the importance of that variable in defining the direction of that principal component. Variables with longer arrows have a larger influence on the corresponding principal component. The angle between two arrows indicates the correlation between those variables, with smaller angles indicating stronger positive correlations and larger angles indicating stronger negative correlations.
+
+In our biplot, we can see that the first principal component (PC1) is strongly influenced by variables related to chronic diseases, such as arthritis, kidney disease, COPD, heart disease, and diabetes. These variables are all positively correlated with each other and have long arrows pointing in the same direction. The variable related to lack of health insurance also has a relatively long arrow pointing in the opposite direction, indicating a negative correlation with the other variables along PC1.
+
+The second principal component (PC2) is more strongly influenced by variables related to lifestyle and physical activity, such as no exercise and high cholesterol. These variables are positively correlated with each other and have long arrows pointing in the same direction. The variables related to chronic diseases have relatively short arrows pointing in the opposite direction, indicating a weaker influence on PC2.
+
+In terms of the city observations, we can see that cities with high positive scores along PC1 (i.e., those to the right of the plot) tend to have higher prevalence of chronic diseases, while those with high positive scores along PC2 (i.e., those at the top of the plot) tend to have higher prevalence of lifestyle and physical activity factors. Conversely, cities with negative scores along PC1 and PC2 have lower prevalence of these factors.
+
+## Question 7:
+
+**In the last month, the Product organization of your web company ran 100 experiments to evaluate ideas to improve the User Experience (UX) of its customers. In each experiment, a Product Engineering team would be responsible to enable a different UX for a randomly selected group of users. For instance, randomly selected users would see different colors for some of the navigation buttons, different positioning of the search bar on the page, modified text for different components of the page, etc. At the end of each experiment, the Product Manager in charge of the experiment would use a tool to compute the p-value for the one-sided t-test associated with following statistical hypothesis test:**
+
+-   H0 : user engagement is not higher with the new user experience
+-   H1 : user engagement higher with the new user experience.
+
+**The `experiments.csv` file contains the p-values of the 100 experiments that were run in the last month. Load the dataset in R.**
+
+```{r}
+df_experiments <- read.csv("experiments.csv")
+head(df_experiments)
+```
+
+## Question 8:
+
+**The Product organization of your web company has an internal policy by which the default significance level that should be used when evaluating the results of UX experiments for the company's website is alpha = 0.10. How many experiments were found to generate a statistically significant UX improvement at the alpha = 0.10 level over the last month?**
+
+```{r}
+significant_experiments <- subset(df_experiments, p <= 0.10)
+num_significant_experiments <- nrow(significant_experiments)
+num_significant_experiments
+```
+
+## Question 9:
+
+**As we learned in class, the Family-Wise Error Rate (FWER) across 100 statistical tests each carried out at the alpha = 0.10 significance level - is much larger than 0.10. Assuming that these statistical tests were independent, what is the effective FWER that the Product team incurred into by not accounting for the problem of multiple testing?**
+
+When conducting multiple statistical tests, the chance of finding at least one significant result by chance alone increases as the number of tests increases, leading to an increased risk of making a Type I error, i.e., rejecting the null hypothesis when it is actually true. This problem is known as the Family-Wise Error Rate (FWER).
+
+In this case, the Product organization of the web company ran 100 independent experiments, each at the alpha = 0.10 significance level. If we assume that these experiments were independent, we can use the Bonferroni correction to adjust the significance level to account for multiple testing. The Bonferroni correction involves dividing the desired alpha level by the number of tests performed. In this case, the adjusted significance level would be:
+
+0.10 / 100 = 0.001
+
+This means that to control the FWER at 0.10, each individual test should be conducted at a significance level of 0.001, which is much more stringent than the original level of 0.10.
+
+Assuming that the 100 statistical tests were conducted independently and without any correction for multiple testing, the effective FWER can be estimated as the probability of making at least one Type I error across all tests. Since each test was conducted at the alpha = 0.10 level, the probability of making a Type I error in each test is 0.10. The probability of making at least one Type I error across all 100 tests is given by:
+
+1 - (1 - 0.10)^100 = 1 - 0.00000000000000000000000000000000000000000000000000000000001 = 1
+
+This means that without any correction for multiple testing, the effective FWER is 1, or 100%. In other words, the probability of making at least one Type I error across all 100 tests is virtually certain. This highlights the importance of correcting for multiple testing to control the FWER and avoid false positive result
+
+## Question 10:
+
+**Using the Benjamini-Hochberg method to account for the problem of multiple testing, provide the list of experiment ids that likely resulted in an improvement of the user experience. Control the False Discovery Rate (FDR) at the level q = 0.10. You can take a look at chapter 13.6.3 of ISL to learn how to use the p.adjust function to perform different types of multiple hypothesis tests, including the Benjamini-Hochberg method. Alternatively, feel free to provide your own implementation of the Benjamini-Hochberg method.**
+
+```{r}
+# Get the p-values
+pvalues <- df_experiments$p
+
+# Apply the Benjamini-Hochberg method to control the FDR
+adjusted_pvalues <- p.adjust(pvalues, method = "BH")
+
+# Get the list of significant experiment ids
+significant_experiments <- which(adjusted_pvalues < 0.1)
+
+# Print the list of significant experiment ids
+significant_experiments
+```
+
